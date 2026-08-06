@@ -2,10 +2,9 @@ import json
 from tratamento_datas import verificar_datas
 from iniciar_bloqueio import iniciar_bloqueio
 
-def loop_filiais(driver): 
-    with open("json_teste.json", "r", encoding="utf-8") as arquivo:
-        dados = json.load(arquivo)
-    
+def loop_filiais(driver, dados): 
+    if isinstance(dados, str):
+        dados = json.loads(dados)
     listas_de_bloqueio = []
     LIMITE_FINANCEIRO = dados['LIMITE_FINANCEIRO']
     LIMITE_FISCAL = dados['LIMITE_FISCAL']
@@ -21,7 +20,7 @@ def loop_filiais(driver):
     if resultado == "INSIRA UMA DATA EM UMA OPÇÂO": 
         return resultado
     if all(data == "" for data in resultado):
-        print("Erro: é necessário informar pelo menos uma data.")
+        print("Erro: é necessário informar pelo uma data valida.")
     else:
         print("Há pelo menos uma data informada.")
     for filial in dados["Filiais"]: 
@@ -34,7 +33,14 @@ def loop_filiais(driver):
     print(listas_de_bloqueio)
     iniciar_bloqueio(driver, listas_de_bloqueio, resultado)
 
-    
+def ajusta_dados_arquivo_inicial(dados): 
 
+    lista_dt = []
+    LIMITE_FINANCEIRO = dados['LIMITE_FINANCEIRO']
+    LIMITE_FISCAL = dados['LIMITE_FISCAL']
+    LIMITE_DEPRECIACAO = dados['LIMITE_DEPRECIACAO']
+    LIMITE_MOVIMENTACAO = dados['LIMITE_MOVIMENTACAO']
 
+    lista_dt = [LIMITE_FINANCEIRO, LIMITE_FISCAL, LIMITE_DEPRECIACAO,LIMITE_MOVIMENTACAO]
+    return lista_dt
 

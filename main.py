@@ -1,21 +1,36 @@
 from biblioteca_protheus import *
+import json
 import os
 import sys
+from tratamento_datas import verificar_datas
+
 from datetime import date
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from loop_f import loop_filiais
+from loop_f import loop_filiais, ajusta_dados_arquivo_inicial
 import keyring
 
 # keyring.set_password("Robo_User", "robo", "Abc123!@#")
 # NOVO (auto driver)
+entrada = sys.stdin.read().strip()
+dados = json.loads(entrada)
+
+datas_a_validar = ajusta_dados_arquivo_inicial(dados)
+datas_validas = verificar_datas(datas_a_validar)
+if all(filial.startswith("-") for filial in dados["Filiais"]):
+    print("Erro: Selecione pelo menos uma filial", file=sys.stderr)
+    sys.exit(0)
+
+if datas_validas == "Erro: insira uma data" or all(data == "" for data in datas_validas):
+    print("Erro: necessario informar uma data valida.", file=sys.stderr)
+    sys.exit(0)
+
 senha = keyring.get_password("Robo_User", "robo")
 hoje = date.today()
 nome_log("bloqueio_datas")
-print("Hoje:", hoje)
 
 #verifica data retroativa
 if hoje.day == 0:
@@ -157,7 +172,7 @@ for menu in menus:
     # Scriptfind(driver,tipo="wa-menu-item")
     funcao_tres_e_demais(driver,"wa-menu-item",menu)
 
-resultado = loop_filiais(driver)
+resultado = loop_filiais(driver, dados)
 if resultado == "INSIRA UMA DATA EM UMA OPÇÂO": 
     print("enviar email inserir data")
 
@@ -166,3 +181,12 @@ log("FINALIZANDO")
 time.sleep(5)
 driver.quit()
 log("FINALIZADO")
+lista_filial_sucesso =[]
+lista_filial_sucesso = []
+
+for filial in dados["Filiais"]:
+    if len(filial) == 6:
+        lista_filial_sucesso.append(filial)
+
+print(f"As datas das filiais:{lista_filial_sucesso} foram alteradas com sucesso", file=sys.stderr)
+sys.exit(0)
