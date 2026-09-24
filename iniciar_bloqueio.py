@@ -14,4 +14,5 @@ def iniciar_bloqueio(driver, filiais, datas):
                 bp.inserir_texto(driver, id, datas[x])
             print(x, "-- ", id)
 
-        bp.funcao_tres_e_demais(driver,"wa-button","Cancelar")
+        bp.funcao_tres_e_demais(driver,"wa-button","Ok")
+        bp.log(f"TESTE----CANCELADO---SALVO{filial}--{datas}")

@@ -13,7 +13,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from loop_f import loop_filiais, ajusta_dados_arquivo_inicial
 import keyring
 
-# keyring.set_password("Robo_User", "robo", "Abc123!@#")
 # NOVO (auto driver)
 entrada = sys.stdin.read().strip()
 dados = json.loads(entrada)
@@ -24,9 +23,14 @@ if all(filial.startswith("-") for filial in dados["Filiais"]):
     print("Erro: Selecione pelo menos uma filial", file=sys.stderr)
     sys.exit(0)
 
-if datas_validas == "Erro: insira uma data" or all(data == "" for data in datas_validas):
+if datas_validas == "Erro: insira uma data" or datas_validas == "INSIRA UMA DATA EM UMA OPÇÂO":
     print("Erro: necessario informar uma data valida.", file=sys.stderr)
     sys.exit(0)
+
+if  all(data == "" for data in datas_validas):
+    print("Erro: necessario informar uma data valida.", file=sys.stderr)
+    sys.exit(0)
+
 
 senha = keyring.get_password("Robo_User", "robo")
 hoje = date.today()
@@ -71,16 +75,19 @@ os.chdir(base_dir)
 # CONFIG
 # =========================
 homologacao = False
-teste = 1
+teste = 0
 
 chrome_options = Options()
 
 # =========================
 # PERFIL
 # =========================
-profile_path = os.path.join(base_dir, "chrome_profile")
-chrome_options.add_argument(f"--user-data-dir={profile_path}")
-
+try: 
+    profile_path = os.path.join(r"C:\Users\DALBAPY\Desktop\Scripts\.profile_padrao\chrome_profile")
+    chrome_options.add_argument(f"--user-data-dir={profile_path}")
+except: 
+    profile_path = os.path.join(r"C:\Users\gustavo.elicker\Documents\PROGRAMAS\.profiles\chrome_profile")
+    chrome_options.add_argument(f"--user-data-dir={profile_path}")
 # =========================
 # MODO EXECUÇÃO
 # =========================
@@ -139,7 +146,7 @@ while True:
         print("Erro ao baixar driver automático:", e)
         print("Usando driver local...")
 
-        driver_path = os.path.join(base_dir, "chromedriver.exe")
+        driver_path = os.path.join(profile_path, "chromedriver.exe")
         service = Service(driver_path)
 
     driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -152,14 +159,17 @@ while True:
 
     log("INICIANDO AMBIENTE")
     iniciar_ambiente(homologacao, driver)
-
-    log("CONFIRMANDO BASE")
-    if confirmaBase(driver, wait):
-        break
-    else:    
+    time.sleep(5)
+    try: 
+        log("CONFIRMANDO BASE")
+        if confirmaBase(driver, wait):
+            break
+        else:    
+            driver.quit()
+            time.sleep(2)
+    except: 
         driver.quit()
         time.sleep(2)
-
 log("REALIZANDO LOGIN")
 login(driver, wait, credenciais)
 
